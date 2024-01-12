@@ -5,14 +5,22 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AutoDrive;
 import frc.robot.commands.Autos;
 import frc.robot.commands.DefaultDrive;
+import frc.robot.commands.DriveDistance;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.FullSpeed;
+import frc.robot.commands.ResetEncoders;
+import frc.robot.commands.SwitchSquareDrive;
+import frc.robot.commands.ThirdSpeed;
+import frc.robot.commands.TurnDegrees;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -36,8 +44,8 @@ public class RobotContainer {
     m_driverSubsystem.setDefaultCommand(
       new DefaultDrive(
         m_driverSubsystem,
-        () -> m_leftjoystick.getRawAxis(1),
-        () -> m_rightjoystick.getRawAxis(1)));
+        () -> -m_leftjoystick.getRawAxis(1),
+        () -> -m_rightjoystick.getRawAxis(1)));
   }
 
   /**
@@ -49,7 +57,16 @@ public class RobotContainer {
    * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
-  private void configureBindings(){}
+  private void configureBindings(){
+    new JoystickButton(m_leftjoystick, 5).onTrue(new SwitchSquareDrive(m_driverSubsystem));
+    new JoystickButton(m_leftjoystick, 2).onTrue(new FullSpeed(m_driverSubsystem));
+    new JoystickButton(m_leftjoystick, 1).onTrue(new ThirdSpeed(m_driverSubsystem));
+    new JoystickButton(m_rightjoystick, 1).whileTrue(new AutoDrive(m_driverSubsystem));
+    new JoystickButton(m_rightjoystick, 6).whileTrue(new ResetEncoders(m_driverSubsystem));
+    new JoystickButton(m_leftjoystick, 12).onTrue(new DriveDistance(m_driverSubsystem,12));
+    new JoystickButton(m_leftjoystick, 7).onTrue(new DriveDistance(m_driverSubsystem,60));
+    new JoystickButton(m_leftjoystick, 11).onTrue(new TurnDegrees(m_driverSubsystem,90));
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -57,6 +74,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() { 
+
    return null;
   }
 }
