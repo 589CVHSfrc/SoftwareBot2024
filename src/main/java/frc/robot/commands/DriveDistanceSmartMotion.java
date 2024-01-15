@@ -7,29 +7,34 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveSubsystem;
 
-public class AutoDrive extends CommandBase {
-  /** Creates a new AutoDrive. */
-  DriveSubsystem m_AutoDrive;
-  public AutoDrive(DriveSubsystem Drive) {
-    m_AutoDrive = Drive;
-    addRequirements(m_AutoDrive);
+public class DriveDistanceSmartMotion extends CommandBase {
+  DriveSubsystem m_drive; 
+  double m_distance;
+  /** Creates a new DriveDistanceSmartMotion. */
+  public DriveDistanceSmartMotion(DriveSubsystem drive, double distance, double speed) {
     // Use addRequirements() here to declare subsystem dependencies.
+    m_drive = drive;
+    m_distance = distance;
+    addRequirements(m_drive);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    m_drive.resetEncoders();
+    m_drive.safteyModeOff();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_AutoDrive.drive(0.08, 0.08);
+    m_drive.PIDDistance(m_distance);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    m_drive.safteyModeOn();
   }
 
   // Returns true when the command should end.

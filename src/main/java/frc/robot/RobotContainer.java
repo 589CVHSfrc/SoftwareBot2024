@@ -5,19 +5,25 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.ArcTurn;
 import frc.robot.commands.AutoDrive;
-import frc.robot.commands.Autos;
+import frc.robot.commands.DefaultArmMovement;
 import frc.robot.commands.DefaultDrive;
 import frc.robot.commands.DriveDistance;
-import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.DriveDistanceSmartMotion;
+import frc.robot.commands.DriveDistanceTrapazoidal;
 import frc.robot.commands.FullSpeed;
+import frc.robot.commands.MoveToPostition;
 import frc.robot.commands.ResetEncoders;
 import frc.robot.commands.SwitchSquareDrive;
+import frc.robot.commands.TestAuto;
 import frc.robot.commands.ThirdSpeed;
 import frc.robot.commands.TurnDegrees;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.ExampleSubsystem;
+
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -32,20 +38,25 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem m_driverSubsystem = new DriveSubsystem();
+  private final ArmSubsystem m_armSubsystem = new ArmSubsystem();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   GenericHID m_leftjoystick = new GenericHID(0);
   GenericHID m_rightjoystick = new GenericHID(1);
+  GenericHID m_armjoystick = new GenericHID(2);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    m_driverSubsystem.setDefaultCommand(
-      new DefaultDrive(
-        m_driverSubsystem,
-        () -> -m_leftjoystick.getRawAxis(1),
-        () -> -m_rightjoystick.getRawAxis(1)));
+    m_driverSubsystem.setDefaultCommand(new MoveToPostition(m_driverSubsystem));
+    // m_driverSubsystem.setDefaultCommand(
+    //   new DefaultDrive(
+    //     m_driverSubsystem,
+    //     () -> -m_leftjoystick.getRawAxis(1),
+    //     () -> -m_rightjoystick.getRawAxis(1)));
+    m_armSubsystem.setDefaultCommand(new DefaultArmMovement(m_armSubsystem, () -> -m_armjoystick.getRawAxis(1)));
+      
   }
 
   /**
@@ -63,9 +74,11 @@ public class RobotContainer {
     new JoystickButton(m_leftjoystick, 1).onTrue(new ThirdSpeed(m_driverSubsystem));
     new JoystickButton(m_rightjoystick, 1).whileTrue(new AutoDrive(m_driverSubsystem));
     new JoystickButton(m_rightjoystick, 6).whileTrue(new ResetEncoders(m_driverSubsystem));
-    new JoystickButton(m_leftjoystick, 12).onTrue(new DriveDistance(m_driverSubsystem,12));
-    new JoystickButton(m_leftjoystick, 7).onTrue(new DriveDistance(m_driverSubsystem,60));
+    new JoystickButton(m_leftjoystick, 12).onTrue(new DriveDistance(m_driverSubsystem,12, 0.15));
+    new JoystickButton(m_leftjoystick, 7).onTrue(new DriveDistanceTrapazoidal(m_driverSubsystem,120, 0.5));
     new JoystickButton(m_leftjoystick, 11).onTrue(new TurnDegrees(m_driverSubsystem,90));
+    new JoystickButton(m_rightjoystick, 2).onTrue(new ArcTurn(m_driverSubsystem, 18 , 180));
+    new JoystickButton(m_leftjoystick, 8).onTrue(new DriveDistanceSmartMotion(m_driverSubsystem,120, 0.5));
   }
 
   /**
@@ -75,6 +88,10 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() { 
 
-   return null;
+   return new TestAuto(m_driverSubsystem);
+  }
+
+  public void periodic(){
+    SmartDashboard.putData("DriveSubsystem", m_driverSubsystem);
   }
 }
